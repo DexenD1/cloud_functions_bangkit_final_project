@@ -35,13 +35,22 @@
  const client = new vision.ImageAnnotatorClient();
  
  exports.gcsObjectChanges = functions.storage.object().onFinalize(async (object) => {
+   // File name
    const filePath = object.name;
-   const baseFileName = path.basename(filePath, path.extname(filePath));
-   const fileDir = path.dirname(filePath);
-   const JPEGFileName = path.normalize(path.format({dir: fileDir, name: baseFileName+"_converted", ext: JPEG_EXTENSION}));
+   
+   // Base file name (without extention)
+  //  const baseFileName = path.basena
+
+   // Current working directory
+  //  const fileDir = path.dirnam
+
+   // Reformat the file name
+  //  const JPEGFileName = path.normalize(path.format({dir: fileDir, name: baseFileName}));
+
    const tempLocalFile = path.join(os.tmpdir(), filePath);
    const tempLocalDir = path.dirname(tempLocalFile);
-   const tempLocalJPEGFile = path.join(os.tmpdir(), JPEGFileName);
+   // Temporary Storage
+  //  const tempLocalJPEGFile = path.join(os.tmpdir(), JPEGFileName);
  
    // Exit if this is triggered on a file that is not an image.
    if (!object.contentType.startsWith('image/')) {
@@ -69,14 +78,12 @@
    labels.forEach(label => functions.logger.log("Label detection result:", label.description));
    
    // Store Image Information on Firestore
-   const bucketName = ""
    let labelsAsInformation = [];
    labels.forEach(label => labelsAsInformation.push(label.description));
 //    const writeResult = await admin.firestore().collection('images').add({imagePath: JPEGFileName, information: labelsAsInformation});
-   const writeResult = await admin.firestore().collection('images').doc(JPEGFileName).set({imagePath: JPEGFileName, information: labelsAsInformation});
+   const writeResult = await admin.firestore().collection('images').doc(filePath).set({imagePath: filePath, information: labelsAsInformation});
 
-   functions.logger.log('JPEG image created at', tempLocalJPEGFile);
-   functions.logger.log('JPEG image uploaded to Storage at', JPEGFileName);
+   functions.logger.log('JPEG image created at', filePath);
 
    // Once the image has been converted delete the local files to free up disk space.
    fs.unlinkSync(tempLocalFile);
